@@ -38,7 +38,7 @@ public class SushiPanel extends JPanel {
     
     private static final double BASE_LANE_Y = 900.0;
     
-    private int sushiX = -SUSHI_WIDTH;
+    private int sushiY = -SUSHI_HEIGHT;
     private BufferedImage sushiImage;
     
     private final Random random = new Random();
@@ -47,7 +47,7 @@ public class SushiPanel extends JPanel {
 
     private MeshView sushiMesh;
 
-    private Rotate rotateX;
+    private Rotate rotateZ;
     private double angle = 0.0;
 
     public SushiPanel(String difficulty) {
@@ -79,11 +79,11 @@ public class SushiPanel extends JPanel {
 
             sushiMesh.setCullFace(CullFace.NONE);
             
-            // X軸回転（底辺を固定して奥から手前に回転）
-            // 回転軸を底辺（-halfHeight）に設定
-            rotateX = new Rotate(0, 0, SUSHI_HEIGHT / 2.0, 0, Rotate.X_AXIS);
+            // Z軸回転（右端を固定して右から左に回転）
+            // 回転軸を右端（halfWidth）に設定
+            rotateZ = new Rotate(0, SUSHI_WIDTH / 2.0, 0, 0, Rotate.Z_AXIS);
 
-            sushiMesh.getTransforms().add(rotateX);
+            sushiMesh.getTransforms().add(rotateZ);
 
             PhongMaterial material = new PhongMaterial();
             Image image = SwingFXUtils.toFXImage(sushiImage, null);
@@ -229,15 +229,16 @@ public class SushiPanel extends JPanel {
         }
     }
     
-    private int getLaneY() {
+    private int getLaneX() {
 
-        int panelHeight = getHeight();
+        int panelWidth = getWidth();
 
-        if (panelHeight <= 0) {
+        if (panelWidth <= 0) {
             return 0;
         }
 
-        return (int) (BASE_LANE_Y * panelHeight / BASE_HEIGHT);
+        // パネルの右端付近に配置
+        return (int) (panelWidth * 0.9);
     }
     
     private List<String> loadSushiList(String difficulty) throws IOException {
@@ -313,9 +314,9 @@ public class SushiPanel extends JPanel {
             return;
         }
 
-        int laneY = getLaneY();
-        double x = sushiX + SUSHI_WIDTH / 2.0 - getWidth() / 2.0;
-        double y = laneY - SUSHI_HEIGHT / 2.0 - getHeight() / 2.0;
+        int laneX = getLaneX();
+        double x = laneX - SUSHI_WIDTH / 2.0 - getWidth() / 2.0;
+        double y = sushiY + SUSHI_HEIGHT / 2.0 - getHeight() / 2.0;
 
         Platform.runLater(() -> {
         	if (sushiMesh != null) {
@@ -338,17 +339,17 @@ public class SushiPanel extends JPanel {
     
     public void move() {
     	
-    	int panelWidth = getWidth();
+    	int panelHeight = getHeight();
         
-        // パネル幅がまだ取得できていない場合の安全対策
-        if (panelWidth <= 0) {
+        // パネル高さがまだ取得できていない場合の安全対策
+        if (panelHeight <= 0) {
             return;
         }
         
-        int totalDistance = panelWidth + SUSHI_WIDTH;
+        int totalDistance = panelHeight + SUSHI_HEIGHT;
         int step = Math.max(2,(int)Math.ceil(totalDistance / 120.0));
 
-        sushiX += step;
+        sushiY += step;
 
         angle += 4.0;
         
@@ -356,19 +357,19 @@ public class SushiPanel extends JPanel {
             angle -= 360.0;
         }
         
-        System.out.println("Sushi move: x=" + sushiX + " angle=" + angle);
+        System.out.println("Sushi move: y=" + sushiY + " angle=" + angle);
         /*
          * JavaFXスレッドで回転角度を更新
          */
         double currentAngle = angle;
 
         Platform.runLater(() -> {
-            if (rotateX != null) {
-                rotateX.setAngle(currentAngle);
+            if (rotateZ != null) {
+                rotateZ.setAngle(currentAngle);
             }
         });
-        //画面右端を超えたら左端から再登場
-        if (sushiX > panelWidth + SUSHI_WIDTH) {
+        //画面下端を超えたら上端から再登場
+        if (sushiY > panelHeight + SUSHI_HEIGHT) {
             resetPosition();
             return;
         }
@@ -380,10 +381,10 @@ public class SushiPanel extends JPanel {
     }
 
     public void resetPosition() {
-        sushiX = - SUSHI_WIDTH;
+        sushiY = - SUSHI_HEIGHT;
         angle = 0.0; // リセット時に角度も0に戻す場合
         Platform.runLater(() -> {
-            if (rotateX != null) {rotateX.setAngle(0);}
+            if (rotateZ != null) {rotateZ.setAngle(0);}
         });
         
         updatePosition();
@@ -392,6 +393,6 @@ public class SushiPanel extends JPanel {
     }
 
     public int getSushiPosition() {
-    	return sushiX;
+    	return sushiY;
     }
 }
