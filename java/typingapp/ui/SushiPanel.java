@@ -38,7 +38,7 @@ public class SushiPanel extends JPanel {
     
     private static final double BASE_LANE_Y = 900.0;
     
-    private int sushiY = -SUSHI_HEIGHT;
+    private int sushiX = -SUSHI_WIDTH;
     private BufferedImage sushiImage;
     
     private final Random random = new Random();
@@ -229,16 +229,15 @@ public class SushiPanel extends JPanel {
         }
     }
     
-    private int getLaneX() {
+    private int getLaneY() {
 
-        int panelWidth = getWidth();
+        int panelHeight = getHeight();
 
-        if (panelWidth <= 0) {
+        if (panelHeight <= 0) {
             return 0;
         }
 
-        // パネルの右端付近に配置
-        return (int) (panelWidth * 0.9);
+        return (int) (BASE_LANE_Y * panelHeight / BASE_HEIGHT);
     }
     
     private List<String> loadSushiList(String difficulty) throws IOException {
@@ -314,9 +313,9 @@ public class SushiPanel extends JPanel {
             return;
         }
 
-        int laneX = getLaneX();
-        double x = laneX - SUSHI_WIDTH / 2.0 - getWidth() / 2.0;
-        double y = sushiY + SUSHI_HEIGHT / 2.0 - getHeight() / 2.0;
+        int laneY = getLaneY();
+        double x = sushiX + SUSHI_WIDTH / 2.0 - getWidth() / 2.0;
+        double y = laneY - SUSHI_HEIGHT / 2.0 - getHeight() / 2.0;
 
         Platform.runLater(() -> {
         	if (sushiMesh != null) {
@@ -339,17 +338,17 @@ public class SushiPanel extends JPanel {
     
     public void move() {
     	
-    	int panelHeight = getHeight();
+    	int panelWidth = getWidth();
         
-        // パネル高さがまだ取得できていない場合の安全対策
-        if (panelHeight <= 0) {
+        // パネル幅がまだ取得できていない場合の安全対策
+        if (panelWidth <= 0) {
             return;
         }
         
-        int totalDistance = panelHeight + SUSHI_HEIGHT;
+        int totalDistance = panelWidth + SUSHI_WIDTH;
         int step = Math.max(2,(int)Math.ceil(totalDistance / 120.0));
 
-        sushiY += step;
+        sushiX += step;
 
         angle += 4.0;
         
@@ -357,7 +356,7 @@ public class SushiPanel extends JPanel {
             angle -= 360.0;
         }
         
-        System.out.println("Sushi move: y=" + sushiY + " angle=" + angle);
+        System.out.println("Sushi move: x=" + sushiX + " angle=" + angle);
         /*
          * JavaFXスレッドで回転角度を更新
          */
@@ -368,8 +367,8 @@ public class SushiPanel extends JPanel {
                 rotateZ.setAngle(currentAngle);
             }
         });
-        //画面下端を超えたら上端から再登場
-        if (sushiY > panelHeight + SUSHI_HEIGHT) {
+        //画面右端を超えたら左端から再登場
+        if (sushiX > panelWidth + SUSHI_WIDTH) {
             resetPosition();
             return;
         }
@@ -381,7 +380,7 @@ public class SushiPanel extends JPanel {
     }
 
     public void resetPosition() {
-        sushiY = - SUSHI_HEIGHT;
+        sushiX = - SUSHI_WIDTH;
         angle = 0.0; // リセット時に角度も0に戻す場合
         Platform.runLater(() -> {
             if (rotateZ != null) {rotateZ.setAngle(0);}
@@ -393,6 +392,6 @@ public class SushiPanel extends JPanel {
     }
 
     public int getSushiPosition() {
-    	return sushiY;
+    	return sushiX;
     }
 }
