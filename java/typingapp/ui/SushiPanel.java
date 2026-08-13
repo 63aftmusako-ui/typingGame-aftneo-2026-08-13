@@ -25,6 +25,7 @@ import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Translate;
 
 public class SushiPanel extends JPanel {
 
@@ -46,7 +47,6 @@ public class SushiPanel extends JPanel {
 
     private MeshView sushiMesh;
 
-    private Rotate rotateY;
     private Rotate rotateX;
     private double angle = 0.0;
 
@@ -79,11 +79,11 @@ public class SushiPanel extends JPanel {
 
             sushiMesh.setCullFace(CullFace.NONE);
             
-            //Y軸回転
-            rotateY = new Rotate(0, Rotate.Y_AXIS);
-            rotateX = new Rotate(0, Rotate.X_AXIS);
+            // X軸回転（底辺を固定して奥から手前に回転）
+            // 回転軸を底辺（-halfHeight）に設定
+            rotateX = new Rotate(0, 0, SUSHI_HEIGHT / 2.0, 0, Rotate.X_AXIS);
 
-            sushiMesh.getTransforms().addAll(rotateY, rotateX);
+            sushiMesh.getTransforms().add(rotateX);
 
             PhongMaterial material = new PhongMaterial();
             Image image = SwingFXUtils.toFXImage(sushiImage, null);
@@ -363,12 +363,8 @@ public class SushiPanel extends JPanel {
         double currentAngle = angle;
 
         Platform.runLater(() -> {
-            if (rotateY != null) {
-                rotateY.setAngle(currentAngle);
-            }
-            
             if (rotateX != null) {
-            	rotateX.setAngle(currentAngle);
+                rotateX.setAngle(currentAngle);
             }
         });
         //画面右端を超えたら左端から再登場
@@ -387,7 +383,7 @@ public class SushiPanel extends JPanel {
         sushiX = - SUSHI_WIDTH;
         angle = 0.0; // リセット時に角度も0に戻す場合
         Platform.runLater(() -> {
-            if (rotateY != null) {rotateY.setAngle(0);}
+            if (rotateX != null) {rotateX.setAngle(0);}
         });
         
         updatePosition();
